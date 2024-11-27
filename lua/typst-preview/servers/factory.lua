@@ -15,6 +15,7 @@ local function spawn(path, mode, callback)
   local server_stderr = assert(vim.uv.new_pipe())
   local tinymist_bin = config.opts.dependencies_bin['tinymist']
     or (utils.get_data_path() .. fetch.get_tinymist_bin_name())
+  local host = os.getenv 'TYPST_PREVIEW_HOST' or '127.0.0.1'
   local args = {
     'preview',
     '--partial-rendering',
@@ -24,11 +25,12 @@ local function spawn(path, mode, callback)
     mode,
     '--no-open',
     '--data-plane-host',
-    '127.0.0.1:0',
+    host .. ':0',
+    -- '127.0.0.1:0',
     '--control-plane-host',
-    '127.0.0.1:0',
+    host .. ':0',
     '--static-file-host',
-    '127.0.0.1:0',
+    host .. ':0',
     '--root',
     config.opts.get_root(path),
     config.opts.get_main_file(path),
@@ -125,6 +127,7 @@ local function spawn(path, mode, callback)
       end
       if static_host then
         utils.debug 'Setting link'
+        vim.notify("typst-preview link: " .. static_host)
         vim.defer_fn(function()
           utils.visit(static_host)
           if callback_param ~= nil then
